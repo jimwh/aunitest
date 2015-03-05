@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<definitions
+        xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:activiti="http://activiti.org/bpmn"
+        xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+        xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+        xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
+        typeLanguage="http://www.w3.org/2001/XMLSchema"
+        expressionLanguage="http://www.w3.org/1999/XPath"
+        targetNamespace="activiti-report">
+
+    <process id="lab-process" name="Main Process">
+
+        <extensionElements>
+            <activiti:executionListener event="start" delegateExpression="${labListener}"/>
+        </extensionElements>
+
+        <startEvent id="theStart"/>
+
+
+
+        <userTask id="submit" name="Submit">
+            <extensionElements>
+                <activiti:taskListener event="create" delegateExpression="${labListener}"/>
+                <activiti:taskListener event="complete" delegateExpression="${labListener}"/>
+            </extensionElements>
+        </userTask>
+
+        <transaction id="TP">
+            <startEvent id="startTP"/>
+            <endEvent id="endTP"/>
+
+            <!-- book hotel -->
+            <serviceTask id="bookHotel" activiti:delegateExpression="${bookHotel}" />
+
+            <boundaryEvent id="compensateBookHotelEvt" attachedToRef="bookHotel" >
+                <compensateEventDefinition />
+            </boundaryEvent>
+
+
+            <serviceTask id="cancelHotel" isForCompensation="true"
+                         activiti:delegateExpression="${cancelHotel}"/>
+
+
+            <serviceTask id="bookFlight" activiti:delegateExpression="${bookFlight}" />
+
+            <boundaryEvent id="compensateBookFlightEvt" attachedToRef="bookFlight">
+                <compensateEventDefinition />
+            </boundaryEvent>
+
+
+            <serviceTask id="cancelFlight" isForCompensation="true"
+                         activiti:delegateExpression="${cancelFlight}"/>
+
+
+            <userTask id="chargeCreditCard" />
+
+            <parallelGateway id="tpFork"/>
+            <sequenceFlow sourceRef="startTP" targetRef="tpFork"/>
+            <sequenceFlow sourceRef="tpFork" targetRef="bookHotel"/>
+            <sequenceFlow sourceRef="tpFork" targetRef="bookFlight"/>
+            <parallelGateway id="tpJoin"/>
+            <sequenceFlow sourceRef="bookHotel" targetRef="tpJoin"/>
+            <sequenceFlow sourceRef="bookFlight" targetRef="tpJoin"/>
+
+            <sequenceFlow sourceRef="tpJoin" targetRef="chargeCreditCard"/>
+
+            <exclusiveGateway id="charged"/>
+
+            <sequenceFlow sourceRef="chargeCreditCard" targetRef="charged"/>
+
+            <endEvent id="cancelReservation">
+                <cancelEventDefinition />
+            </endEvent>
+
+            <sequenceFlow sourceRef="charged" targetRef="endTP">
+                <conditionExpression xsi:type="tFormalExpression">${charged==true}
+                </conditionExpression>
+            </sequenceFlow>
+
+            <sequenceFlow sourceRef="charged" targetRef="cancelReservation">
+                <conditionExpression xsi:type="tFormalExpression">${charged==false}
+                </conditionExpression>
+            </sequenceFlow>
+
+            <association associationDirection="One" id="a1"
+                         sourceRef="compensateBookHotelEvt" targetRef="cancelHotel" />
+
+
+            <association associationDirection="Both" id="a2"
+                         sourceRef="compensateBookFlightEvt" targetRef="cancelFlight" />
+
+        </transaction>
+        <boundaryEvent id="reservationCancelled" attachedToRef="TP">
+            <cancelEventDefinition/>
+        </boundaryEvent>
+
+        <sequenceFlow sourceRef="theStart" targetRef="submit"/>
+        <endEvent id="theEnd"/>
+        <sequenceFlow sourceRef="submit" targetRef="TP"/>
+        <sequenceFlow sourceRef="TP" targetRef="theEnd"/>
+    </process>
+
+</definitions>
