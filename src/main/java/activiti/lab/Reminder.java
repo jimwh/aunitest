@@ -10,7 +10,7 @@ public class Reminder implements JavaDelegate {
 
     @Override
     public void execute(DelegateExecution delegateExecution) throws Exception {
-        log.info("Reminder waiting...");
+        log.info("reminder...");
     }
 
     public void m3Reminder(DelegateExecution delegateExecution) {

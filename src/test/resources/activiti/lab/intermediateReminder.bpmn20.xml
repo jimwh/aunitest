@@ -7,42 +7,53 @@
         expressionLanguage="http://www.w3.org/1999/XPath"
         targetNamespace="activiti-report">
 
-    <signal id="cancelSignal" name="cancel" activiti:scope="processInstance"/>
-
     <process id="intermediateReminder" name="Reminder">
 
-        <startEvent id="theStart" />
+        <startEvent id="theStart" name="Start"/>
 
-        <sequenceFlow sourceRef="theStart" targetRef="timer" />
+        <transaction id="TP" name="Reminder Transaction">
 
-        <intermediateCatchEvent id="timer">
-            <timerEventDefinition>
-                <timeDuration>PT1M</timeDuration>
-            </timerEventDefinition>
-        </intermediateCatchEvent>
+            <userTask id="userTask" name="User Cancel Timer Task"/>
 
-        <!--
-        <boundaryEvent id="m3Timer" cancelActivity="true" attachedToRef="reminderTask">
-            <timerEventDefinition>
-                <timeDuration>PT1M3S</timeDuration>
-            </timerEventDefinition>
+            <intermediateCatchEvent id="timer" name="Timer">
+                <timerEventDefinition>
+                    <timeDuration>PT30S</timeDuration>
+                </timerEventDefinition>
+            </intermediateCatchEvent>
+
+            <!--
+                    <serviceTask id="reminderTask"
+                      activiti:delegateExpression="${reminderDelegate}"/>
+            -->
+            <serviceTask id="reminderTask" name="Reminder Service Task"
+                         activiti:expression="#{reminderDelegate.m3Reminder(execution)}"/>
+
+            <startEvent id="tpStart"/>
+            <parallelGateway id="fork" name="Fork"/>
+            <sequenceFlow sourceRef="tpStart" targetRef="fork"/>
+
+            <sequenceFlow sourceRef="fork" targetRef="timer"/>
+            <sequenceFlow sourceRef="fork" targetRef="userTask"/>
+            <sequenceFlow sourceRef="timer" targetRef="reminderTask"/>
+
+            <exclusiveGateway id="join" name="Join"/>
+            <sequenceFlow sourceRef="userTask" targetRef="join"/>
+            <sequenceFlow sourceRef="reminderTask" targetRef="join"/>
+            <endEvent id="tpEnd">
+                <cancelEventDefinition/>
+            </endEvent>
+
+            <sequenceFlow sourceRef="join" targetRef="tpEnd"/>
+
+        </transaction>
+        <boundaryEvent id="tpTancel" attachedToRef="TP">
+            <cancelEventDefinition />
         </boundaryEvent>
-        <sequenceFlow sourceRef="m3Timer" targetRef="theEnd" />
-        -->
 
-        <sequenceFlow sourceRef="timer" targetRef="reminderTask" />
-<!--
-        <serviceTask id="reminderTask"
-                     activiti:delegateExpression="${reminderDelegate}"/>
--->
+        <sequenceFlow sourceRef="theStart" targetRef="TP"/>
+        <sequenceFlow sourceRef="TP" targetRef="theEnd"/>
 
-        <serviceTask id="reminderTask"
-                     activiti:expression="#{reminderDelegate.m3Reminder(execution)}"
-                     />
-
-        <sequenceFlow sourceRef="reminderTask" targetRef="theEnd" />
-
-        <endEvent id="theEnd" />
+        <endEvent id="theEnd" name="End"/>
 
     </process>
 

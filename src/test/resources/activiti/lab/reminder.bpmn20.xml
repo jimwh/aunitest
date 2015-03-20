@@ -9,11 +9,11 @@
 
     <process id="reminder" name="Reminder">
 
-        <startEvent id="theStart" />
+        <startEvent id="theStart" name="Start Process"/>
 
         <sequenceFlow sourceRef="theStart" targetRef="timer" />
 
-        <intermediateCatchEvent id="timer">
+        <intermediateCatchEvent id="timer" name="Timer">
             <timerEventDefinition>
                 <timeDuration>PT1M</timeDuration>
             </timerEventDefinition>
@@ -40,10 +40,10 @@
 
         <sequenceFlow sourceRef="reminderTask" targetRef="theEnd" />
 
-        <serviceTask id="reminderTask" isForCompensation="true"
+        <serviceTask id="reminderTask" isForCompensation="true" name="Reminder Service Task"
                      activiti:delegateExpression="${reminderDelegate}"/>
 
-        <endEvent id="theEnd" />
+        <endEvent id="theEnd" name="Process End"/>
 
     </process>
 
