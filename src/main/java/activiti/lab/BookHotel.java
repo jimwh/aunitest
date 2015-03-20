@@ -11,6 +11,7 @@ public class BookHotel implements JavaDelegate {
     @Override
     public void execute(DelegateExecution delegateExecution) throws Exception {
         log.info("book Hotel ...");
+      
         // throw new Exception("foo me");
     }
 }

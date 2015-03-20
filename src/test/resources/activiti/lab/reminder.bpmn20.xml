@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<definitions
+        xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:activiti="http://activiti.org/bpmn"
+        typeLanguage="http://www.w3.org/2001/XMLSchema"
+        expressionLanguage="http://www.w3.org/1999/XPath"
+        targetNamespace="activiti-report">
+
+    <process id="reminder" name="Reminder">
+
+        <startEvent id="theStart" />
+
+        <sequenceFlow sourceRef="theStart" targetRef="timer" />
+
+        <intermediateCatchEvent id="timer">
+            <timerEventDefinition>
+                <timeDuration>PT1M</timeDuration>
+            </timerEventDefinition>
+        </intermediateCatchEvent>
+
+        <sequenceFlow sourceRef="timer" targetRef="reminderTask" />
+
+        <!--
+        <sequenceFlow sourceRef="theStart" targetRef="m3Reminder" />
+
+        <userTask id="m3Reminder" name="Task rigged with timer" />
+
+        <sequenceFlow sourceRef="m3Reminder" targetRef="reminderTask" />
+
+        <boundaryEvent id="m3Timer" cancelActivity="true" attachedToRef="m3Reminder">
+            <timerEventDefinition>
+                <timeDuration>PT2M</timeDuration>
+            </timerEventDefinition>
+        </boundaryEvent>
+
+        <sequenceFlow sourceRef="m3Timer" targetRef="reminderTask" />
+
+        -->
+
+        <sequenceFlow sourceRef="reminderTask" targetRef="theEnd" />
+
+        <serviceTask id="reminderTask" isForCompensation="true"
+                     activiti:delegateExpression="${reminderDelegate}"/>
+
+        <endEvent id="theEnd" />
+
+    </process>
+
+</definitions>

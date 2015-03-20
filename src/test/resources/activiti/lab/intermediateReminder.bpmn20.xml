@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<definitions
+        xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:activiti="http://activiti.org/bpmn"
+        typeLanguage="http://www.w3.org/2001/XMLSchema"
+        expressionLanguage="http://www.w3.org/1999/XPath"
+        targetNamespace="activiti-report">
+
+    <signal id="cancelSignal" name="cancel" activiti:scope="processInstance"/>
+
+    <process id="intermediateReminder" name="Reminder">
+
+        <startEvent id="theStart" />
+
+        <sequenceFlow sourceRef="theStart" targetRef="timer" />
+
+        <intermediateCatchEvent id="timer">
+            <timerEventDefinition>
+                <timeDuration>PT1M</timeDuration>
+            </timerEventDefinition>
+        </intermediateCatchEvent>
+
+        <!--
+        <boundaryEvent id="m3Timer" cancelActivity="true" attachedToRef="reminderTask">
+            <timerEventDefinition>
+                <timeDuration>PT1M3S</timeDuration>
+            </timerEventDefinition>
+        </boundaryEvent>
+        <sequenceFlow sourceRef="m3Timer" targetRef="theEnd" />
+        -->
+
+        <sequenceFlow sourceRef="timer" targetRef="reminderTask" />
+<!--
+        <serviceTask id="reminderTask"
+                     activiti:delegateExpression="${reminderDelegate}"/>
+-->
+
+        <serviceTask id="reminderTask"
+                     activiti:expression="#{reminderDelegate.m3Reminder(execution)}"
+                     />
+
+        <sequenceFlow sourceRef="reminderTask" targetRef="theEnd" />
+
+        <endEvent id="theEnd" />
+
+    </process>
+
+</definitions>

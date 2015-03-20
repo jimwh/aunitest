@@ -1,54 +1,87 @@
 package activiti.lab;
 
-import java.util.*;
-
 import org.activiti.engine.HistoryService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
-import org.activiti.engine.history.HistoricTaskInstance;
-import org.activiti.engine.history.HistoricTaskInstanceQuery;
+import org.activiti.engine.history.*;
 import org.activiti.engine.runtime.Execution;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Comment;
 import org.activiti.engine.task.Task;
 import org.activiti.engine.test.ActivitiRule;
 import org.activiti.engine.test.Deployment;
-
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LabUnitTest {
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-    static final Logger log = LoggerFactory.getLogger(LabUnitTest.class);
-    static final String ProcessDefKey = "lab-process";
+public class ReminderTest {
+
+    static final Logger log = LoggerFactory.getLogger(ReminderTest.class);
+    static final String ProcessDefKey = "intermediateReminder";
 
     @Rule
     public ActivitiRule activitiRule = new ActivitiRule();
 
     @Test
-    @Deployment(resources = {"activiti/lab/lab-process.bpmn20.xml"})
+    @Deployment(resources = {"activiti/lab/intermediateReminder.bpmn20.xml"})
     public void test() {
         String bizKey = "my-bizKey";
         ProcessInstance instance=starProcess(bizKey, new HashMap<String, Object>(), "test");
         Assert.assertNotNull(instance);
-        List<String> activeActivityIds = activitiRule.getRuntimeService()
-                .getActiveActivityIds(instance.getId());
-        log.info(activeActivityIds.toString());
-        Execution execution = activitiRule.getRuntimeService().createExecutionQuery()
-                .processInstanceId(instance.getId())
-                .activityId("cancelHotel").singleResult();
-        if (execution != null) {
-            activitiRule.getRuntimeService().signal(execution.getId());
+        //
+        /*
+        Task m3ReminderTask = activitiRule.getTaskService()
+                .createTaskQuery()
+                .processInstanceBusinessKey(bizKey)
+                .taskDefinitionKey("m3Reminder").singleResult();
+        */
+        // Assert.assertNotNull(m3ReminderTask);
+        //
+        // activitiRule.getTaskService().complete(m3ReminderTask.getId());
+        //
+        try {
+            Thread.sleep(140000);
+            /*
+            m3ReminderTask = activitiRule.getTaskService()
+                    .createTaskQuery()
+                    .processInstanceBusinessKey(bizKey)
+                    .taskDefinitionKey("m3Reminder").singleResult();
+            // Assert.assertNull(m3ReminderTask);
+            // activitiRule.getTaskService().complete(m3ReminderTask.getId());
+            */
+            log.info("time out...");
+        }catch (InterruptedException e) {
+
         }
-        Task task=getTaskByTaskDefKey(bizKey, "submit");
-        Assert.assertNotNull(task);
-        activitiRule.getTaskService().complete(task.getId());
-        printOpenTaskList(bizKey);
-        printOpenActiviti(bizKey);
+
+        instance=activitiRule.getRuntimeService().createProcessInstanceQuery()
+                .processInstanceBusinessKey(bizKey).singleResult();
+        Assert.assertNull(instance);
+
+        List<HistoricDetail>list =
+                activitiRule.getHistoryService()
+                .createHistoricDetailQuery()
+                .list();
+
+        for(HistoricDetail h: list) {
+            log.info("executionId={}", h.getExecutionId());
+        }
+
+        List<HistoricActivityInstance>inList=
+                activitiRule.getHistoryService()
+                        .createHistoricActivityInstanceQuery()
+                        .orderByHistoricActivityInstanceEndTime()
+                        .desc()
+                        .list();
+        for(HistoricActivityInstance h: inList) {
+            log.info("fff..."+h.getActivityId());
+        }
     }
 
 

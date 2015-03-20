@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:activiti="http://activiti.org/bpmn"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             targetNamespace="Examples"
+             xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL http://www.omg.org/spec/BPMN/2.0/20100501/BPMN20.xsd">
+
+    <error id="notEnoughInfoError" errorCode="not_enough_info"/>
+
+    <process id="reviewSaledLead" name="Review sales lead">
+
+        <startEvent id="theStart"/>
+        <sequenceFlow sourceRef="theStart" targetRef="provideNewSalesLead"/>
+
+        <userTask id="provideNewSalesLead" name="Provide new sales lead">
+            <extensionElements>
+                <activiti:formProperty id="customerName" name="Customer name" type="string" required="true"/>
+                <activiti:formProperty id="potentialProfit" name="Potential profit" type="long"/>
+                <activiti:formProperty id="details" name="Details" type="string"/>
+            </extensionElements>
+        </userTask>
+        <sequenceFlow sourceRef="provideNewSalesLead" targetRef="reviewSalesLeadSubProcess"/>
+
+        <subProcess id="reviewSalesLeadSubProcess" name="Review sales lead">
+
+            <startEvent id="subProcessStart"/>
+
+            <parallelGateway id="fork"/>
+
+            <userTask id="reviewProfitability" name="Review profitability">
+                <extensionElements>
+                    <activiti:formProperty id="notEnoughInformation" name="Do you believe this customer is profitable?"
+                                           type="enum" required="true">
+                        <activiti:value id="false" name="Yes"/>
+                        <activiti:value id="true" name="No (= request more info)"/>
+                    </activiti:formProperty>
+                </extensionElements>
+            </userTask>
+
+            <userTask id="reviewCustomerRating" name="Review customer rating"/>
+
+            <sequenceFlow sourceRef="subProcessStart" targetRef="fork"/>
+            <sequenceFlow sourceRef="fork" targetRef="reviewProfitability"/>
+            <sequenceFlow sourceRef="fork" targetRef="reviewCustomerRating"/>
+
+            <endEvent id="subProcessEnd1"/>
+            <sequenceFlow sourceRef="reviewCustomerRating" targetRef="subProcessEnd1"/>
+
+            <sequenceFlow sourceRef="reviewProfitability" targetRef="enoughInformationCheck"/>
+
+            <exclusiveGateway id="enoughInformationCheck" name="Enough information?"/>
+            <sequenceFlow sourceRef="enoughInformationCheck" targetRef="notEnoughInformationEnd">
+                <conditionExpression>${notEnoughInformation == 'true'}</conditionExpression>
+            </sequenceFlow>
+
+            <endEvent id="subProcessEnd2"/>
+            <sequenceFlow sourceRef="enoughInformationCheck" targetRef="subProcessEnd2">
+                <conditionExpression>${notEnoughInformation == 'false'}</conditionExpression>
+            </sequenceFlow>
+
+            <endEvent id="notEnoughInformationEnd">
+                <errorEventDefinition errorRef="notEnoughInfoError"/>
+            </endEvent>
+
+        </subProcess>
+
+        <sequenceFlow sourceRef="reviewSalesLeadSubProcess" targetRef="storeLeadInCrmSystem"/>
+
+        <boundaryEvent attachedToRef="reviewSalesLeadSubProcess" cancelActivity="true"
+                       id="catchNotEnoughInformationError">
+            <errorEventDefinition errorRef="notEnoughInfoError"/>
+        </boundaryEvent>
+        <sequenceFlow sourceRef="catchNotEnoughInformationError" targetRef="provideAdditionalDetails"/>
+
+        <userTask id="provideAdditionalDetails" name="Provide additional details" >
+            <extensionElements>
+                <activiti:formProperty id="details" name="Additional details" type="string" required="true"/>
+            </extensionElements>
+        </userTask>
+        <sequenceFlow sourceRef="provideAdditionalDetails" targetRef="reviewSalesLeadSubProcess"/>
+
+        <task id="storeLeadInCrmSystem" name="Store lead in CRM system"/>
+
+        <sequenceFlow sourceRef="storeLeadInCrmSystem" targetRef="processEnd"/>
+
+        <endEvent id="processEnd"/>
+
+    </process>
+
+</definitions>
