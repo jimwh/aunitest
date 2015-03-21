@@ -12,4 +12,8 @@ public class BookFlight implements JavaDelegate {
     public void execute(DelegateExecution delegateExecution) throws Exception {
         log.info("book flight...");
     }
+
+    public void bookFlight(String foo) {
+        throw new IllegalArgumentException("flight not available");
+    }
 }

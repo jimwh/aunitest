@@ -22,13 +22,13 @@
         <sequenceFlow sourceRef="timer" targetRef="reminderTask" />
 
         <!--
-        <sequenceFlow sourceRef="theStart" targetRef="m3Reminder" />
+        <sequenceFlow sourceRef="theStart" targetRef="expirationReminder" />
 
-        <userTask id="m3Reminder" name="Task rigged with timer" />
+        <userTask id="expirationReminder" name="Task rigged with timer" />
 
-        <sequenceFlow sourceRef="m3Reminder" targetRef="reminderTask" />
+        <sequenceFlow sourceRef="expirationReminder" targetRef="reminderTask" />
 
-        <boundaryEvent id="m3Timer" cancelActivity="true" attachedToRef="m3Reminder">
+        <boundaryEvent id="m3Timer" cancelActivity="true" attachedToRef="expirationReminder">
             <timerEventDefinition>
                 <timeDuration>PT2M</timeDuration>
             </timerEventDefinition>

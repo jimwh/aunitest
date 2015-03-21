@@ -28,8 +28,14 @@ public class ReminderTest {
     @Test
     @Deployment(resources = {"activiti/lab/intermediateReminder.bpmn20.xml"})
     public void test() {
+        normal();
+        // userCancel();
+    }
+    public void userCancel() {
         String bizKey = "my-bizKey";
-        ProcessInstance instance=starProcess(bizKey, new HashMap<String, Object>(), "test");
+        Map<String, Object>map=new HashMap<String, Object>();
+        map.put("duration", "PT50S");
+        ProcessInstance instance=starProcess(bizKey, map, "d90reminder");
         Assert.assertNotNull(instance);
         //
         Task userTask=activitiRule.getTaskService()
@@ -41,12 +47,11 @@ public class ReminderTest {
         Assert.assertNotNull(userTask);
         activitiRule.getTaskService().complete(userTask.getId());
         //
-
-
         instance = activitiRule.getRuntimeService().createProcessInstanceQuery()
                 .processInstanceBusinessKey(bizKey).singleResult();
         Assert.assertNull(instance);
         //
+
         List<HistoricActivityInstance>inList=
                 activitiRule.getHistoryService()
                         .createHistoricActivityInstanceQuery()
@@ -60,9 +65,13 @@ public class ReminderTest {
 
     public void normal() {
         String bizKey = "my-bizKey";
-        ProcessInstance instance=starProcess(bizKey, new HashMap<String, Object>(), "test");
+        Map<String, Object>map=new HashMap<String, Object>();
+        map.put("duration", "PT3S");
+        map.put("D90REMINDER", "D90REMINDER");
+        ProcessInstance instance=starProcess(bizKey, map, "d90reminder");
         Assert.assertNotNull(instance);
         //
+        log.info("has cancel task={}", hasTask(bizKey, "cancelReminder"));
         List<Job> timerList=activitiRule.getManagementService()
                 .createJobQuery()
                 .processInstanceId(instance.getProcessInstanceId())
@@ -70,24 +79,82 @@ public class ReminderTest {
         Assert.assertNotNull(timerList);
 
         try {
-            Thread.sleep(66000);
+            Thread.sleep(30000);
         }catch (InterruptedException e){}
 
         instance = activitiRule.getRuntimeService().createProcessInstanceQuery()
                 .processInstanceBusinessKey(bizKey).singleResult();
         Assert.assertNull(instance);
         //
-        List<HistoricActivityInstance>inList=
-                activitiRule.getHistoryService()
-                        .createHistoricActivityInstanceQuery()
-                        .orderByHistoricActivityInstanceEndTime()
-                        .desc()
-                        .list();
-        for(HistoricActivityInstance hai: inList) {
-            log.info("activityId={}", hai.getActivityId());
-        }
+        printHistoricReminder(bizKey);
+
+        printHistoricTaskInstance(bizKey);
     }
 
+    HistoricProcessInstance getHistoriceProcessInstanceByBizKeyAndInstanceName(String bizKey, String name) {
+        return activitiRule.getHistoryService()
+                .createHistoricProcessInstanceQuery()
+                .processInstanceBusinessKey(bizKey)
+                .processInstanceName(name)
+                .singleResult();
+    }
+
+    void printHistoricReminder(String bizKey) {
+        HistoricProcessInstance pi=
+                getHistoriceProcessInstanceByBizKeyAndInstanceName(bizKey, "d90reminder");
+
+
+        HistoricActivityInstance reminder=
+                activitiRule.getHistoryService()
+                        .createHistoricActivityInstanceQuery()
+                        .processInstanceId(pi.getId())
+                        .activityId("reminderTask")
+                        .singleResult();
+        log.info("endTime={},activityId={},activityName={},activityType={}, duration={}",
+                reminder.getEndTime(),
+                reminder.getActivityId(),
+                reminder.getActivityName(),
+                reminder.getActivityType(),
+                reminder.getDurationInMillis());
+        //
+        HistoricActivityInstance catchError=
+                activitiRule.getHistoryService()
+                        .createHistoricActivityInstanceQuery()
+                        .processInstanceId(pi.getId())
+                        .activityId("catchError")
+                        .singleResult();
+        log.info("endTime={},activityId={},activityName={},activityType={}, duration={}",
+                catchError.getEndTime(),
+                catchError.getActivityId(),
+                catchError.getActivityName(),
+                catchError.getActivityType(),
+                catchError.getDurationInMillis());
+    }
+
+    boolean hasTask(String bizKey, String taskDefKey) {
+        return activitiRule.getTaskService().createTaskQuery()
+                .processInstanceBusinessKey(bizKey)
+                .taskDefinitionKey(taskDefKey)
+                .singleResult() != null;
+    }
+
+    void printHistoricTaskInstance(String bizKey) {
+        HistoricProcessInstance pi=
+                getHistoriceProcessInstanceByBizKeyAndInstanceName(bizKey,"d90reminder");
+
+        List<HistoricTaskInstance>hsList=activitiRule.getHistoryService()
+                .createHistoricTaskInstanceQuery()
+                .processInstanceBusinessKey(bizKey)
+                .processInstanceId(pi.getId())
+                .finished()
+                .orderByHistoricTaskInstanceEndTime()
+                .desc()
+                .list();
+        for(HistoricTaskInstance hs: hsList) {
+            log.info("taskDefKey={}, taskName={}, deleltedOrCompleted={}",
+                    hs.getTaskDefinitionKey(), hs.getName(), hs.getDeleteReason());
+        }
+    }
 
     ProcessInstance starProcess(String bizKey, Map<String, Object> map, String instanceName) {
         RuntimeService runtimeService = activitiRule.getRuntimeService();
@@ -95,5 +162,4 @@ public class ReminderTest {
         runtimeService.setProcessInstanceName(instance.getProcessInstanceId(), instanceName);
         return instance;
     }
-
 }

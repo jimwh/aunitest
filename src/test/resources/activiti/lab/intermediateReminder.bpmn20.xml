@@ -11,33 +11,29 @@
 
         <startEvent id="theStart" name="Start"/>
 
-        <transaction id="TP" name="Reminder Transaction">
+        <transaction id="reminderTransaction" name="Reminder Transaction">
 
-            <userTask id="userTask" name="User Cancel Timer Task"/>
+            <userTask id="cancelReminder" name="User Cancel Timer Task"/>
 
             <intermediateCatchEvent id="timer" name="Timer">
                 <timerEventDefinition>
-                    <timeDuration>PT30S</timeDuration>
+                    <timeDuration>${duration}</timeDuration>
                 </timerEventDefinition>
             </intermediateCatchEvent>
 
-            <!--
-                    <serviceTask id="reminderTask"
-                      activiti:delegateExpression="${reminderDelegate}"/>
-            -->
-            <serviceTask id="reminderTask" name="Reminder Service Task"
-                         activiti:expression="#{reminderDelegate.m3Reminder(execution)}"/>
+            <serviceTask id="reminderTask" name="Remind Service Task"
+                         activiti:expression="#{reminderDelegate.expirationReminder(execution)}"/>
 
-            <startEvent id="tpStart"/>
+            <startEvent id="reminderStart"/>
             <parallelGateway id="fork" name="Fork"/>
-            <sequenceFlow sourceRef="tpStart" targetRef="fork"/>
+            <sequenceFlow sourceRef="reminderStart" targetRef="fork"/>
 
             <sequenceFlow sourceRef="fork" targetRef="timer"/>
-            <sequenceFlow sourceRef="fork" targetRef="userTask"/>
+            <sequenceFlow sourceRef="fork" targetRef="cancelReminder"/>
             <sequenceFlow sourceRef="timer" targetRef="reminderTask"/>
 
             <exclusiveGateway id="join" name="Join"/>
-            <sequenceFlow sourceRef="userTask" targetRef="join"/>
+            <sequenceFlow sourceRef="cancelReminder" targetRef="join"/>
             <sequenceFlow sourceRef="reminderTask" targetRef="join"/>
             <endEvent id="tpEnd">
                 <cancelEventDefinition/>
@@ -46,14 +42,19 @@
             <sequenceFlow sourceRef="join" targetRef="tpEnd"/>
 
         </transaction>
-        <boundaryEvent id="tpTancel" attachedToRef="TP">
+        <boundaryEvent id="tpCancel" attachedToRef="reminderTransaction">
             <cancelEventDefinition />
         </boundaryEvent>
 
-        <sequenceFlow sourceRef="theStart" targetRef="TP"/>
-        <sequenceFlow sourceRef="TP" targetRef="theEnd"/>
-
+        <sequenceFlow sourceRef="theStart" targetRef="reminderTransaction"/>
+        <sequenceFlow sourceRef="reminderTransaction" targetRef="theEnd"/>
         <endEvent id="theEnd" name="End"/>
+
+        <boundaryEvent id="catchError" attachedToRef="reminderTransaction">
+            <errorEventDefinition errorRef="BusinessExceptionOccurred"/>
+        </boundaryEvent>
+
+        <sequenceFlow sourceRef="catchError" targetRef="theEnd"/>
 
     </process>
 
