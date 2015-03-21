@@ -1,58 +1,72 @@
 package activiti.lab;
 
-import org.activiti.engine.delegate.BpmnError;
-import org.activiti.engine.delegate.DelegateExecution;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.joda.time.DateTime;
 
-public class Reminder {
-    private static final Logger log = LoggerFactory.getLogger(Reminder.class);
+import java.util.Date;
 
-    @Autowired
-    BookFlight book;
+public enum Reminder {
 
-    public void expirationReminder(DelegateExecution delegateExecution) throws Exception {
-        int retries = 0;
-        while (true) {
-            try {
-                log.info("bizKey={}, currentActivityId={}",
-                        delegateExecution.getProcessBusinessKey(),
-                        delegateExecution.getCurrentActivityId()
-                );
-                book.bookFlight("foome");
-                log.info("booked ...");
-                return;
-            } catch (Exception e) {
-                if (retries == 3) {
-                    throw new BpmnError("BusinessExceptionOccurred");
-                }
-                retries += 1;
-            }
-            //
-            try {
-                Thread.sleep(8);
-            } catch (InterruptedException e) {
-            }
+    Day90("90 Day Reminder") {
+        public String taskDefKey() {
+            return "cancelReminder90";
         }
+
+        public String activityId() {
+            return "reminder90";
+        }
+
+        public int gatewayValue() { return 90; }
+        public String catchErrorId() { return "catchError90"; }
+    },
+
+    Day60("60 Day Reminder") {
+        public String taskDefKey() {
+            return "cancelReminder60";
+        }
+
+        public String activityId() {
+            return "reminder60";
+        }
+        public int gatewayValue() { return 60; }
+
+        public String catchErrorId() { return "catchError60"; }
+    },
+
+    Day30("30 Day Reminder") {
+        public String taskDefKey() {
+            return "cancelReminder30";
+        }
+
+        public String activityId() {
+            return "reminder30";
+        }
+        public int gatewayValue() { return 30; }
+
+        public String catchErrorId() { return "catchError30"; }
+
+    };
+
+    private String text;
+
+    private Reminder(String text) {
+        this.text = text;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public abstract String taskDefKey();
+
+    public abstract String activityId();
+
+    public abstract int gatewayValue();
+
+    public abstract String catchErrorId();
+
+    public String getISO8601DateFormat(Date date){
+        if( date==null ) return null;
+        DateTime dateTime=new DateTime(date);
+        return dateTime.toString("YYYY-MM-dd") + "T" + dateTime.toString("HH:mm:ss");
     }
 }
-
-/*
-public class Reminder implements JavaDelegate {
-    private static final Logger log= LoggerFactory.getLogger(Reminder.class);
-
-    @Override
-    public void execute(DelegateExecution delegateExecution) throws Exception {
-        log.info("reminder...");
-    }
-
-    public void expirationReminder(DelegateExecution delegateExecution) {
-        // try {} catch {} to handle until done
-        log.info("bizKey={}, cancelJob={}",
-            delegateExecution.getProcessBusinessKey(),
-                delegateExecution.getVariable("cancelJob") );
-    }
-
-}
-*/

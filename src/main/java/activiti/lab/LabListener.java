@@ -1,12 +1,10 @@
 package activiti.lab;
 
-import org.activiti.engine.delegate.DelegateExecution;
-import org.activiti.engine.delegate.DelegateTask;
-import org.activiti.engine.delegate.ExecutionListener;
-import org.activiti.engine.delegate.TaskListener;
+import org.activiti.engine.delegate.*;
 import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -75,4 +73,33 @@ public class LabListener implements TaskListener, ExecutionListener {
             thisEntity.setVariables(processMap);
         }
     }
+
+    @Autowired
+    BookFlight book;
+
+    public void expirationReminder(DelegateExecution delegateExecution) throws Exception {
+        int retries = 0;
+        while (true) {
+            try {
+                log.info("bizKey={}, currentActivityId={}",
+                        delegateExecution.getProcessBusinessKey(),
+                        delegateExecution.getCurrentActivityId()
+                );
+                book.bookFlight("foome");
+                log.info("booked ...");
+                return;
+            } catch (Exception e) {
+                if (retries == 3) {
+                    throw new BpmnError("BusinessExceptionOccurred");
+                }
+                retries += 1;
+            }
+            //
+            try {
+                Thread.sleep(8);
+            } catch (InterruptedException e) {
+            }
+        }
+    }
+
 }

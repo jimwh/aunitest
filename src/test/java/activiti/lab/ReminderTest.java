@@ -7,12 +7,14 @@ import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
 import org.activiti.engine.test.ActivitiRule;
 import org.activiti.engine.test.Deployment;
+import org.joda.time.DateTime;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +30,14 @@ public class ReminderTest {
     @Test
     @Deployment(resources = {"activiti/lab/intermediateReminder.bpmn20.xml"})
     public void test() {
+        log.info("codeName={}", Reminder.Day30.getText());
+        log.info("name={}", Reminder.Day30.name());
+        log.info("taskDefKey={}", Reminder.Day30.taskDefKey());
+        log.info("activityId={}", Reminder.Day30.activityId());
+        log.info("toString={}", Reminder.Day30.toString());
+        Date date = new Date();
+        log.info("date={}", date);
+        log.info("ISO8601DateFormat={}", Reminder.Day30.getISO8601DateFormat(date));
         normal();
         // userCancel();
     }
@@ -66,12 +76,19 @@ public class ReminderTest {
     public void normal() {
         String bizKey = "my-bizKey";
         Map<String, Object>map=new HashMap<String, Object>();
-        map.put("duration", "PT3S");
-        map.put("D90REMINDER", "D90REMINDER");
-        ProcessInstance instance=starProcess(bizKey, map, "d90reminder");
+
+        DateTime dateTime=new DateTime(new Date());
+
+        //map.put("remindDate", Reminder.Day30.getISO8601DateFormat(dateTime.minusDays(3).toDate()));
+        //map.put("remindDate", Reminder.Day30.getISO8601DateFormat(dateTime.plusDays(1).toDate()));
+        //map.put("remindDate", Reminder.Day30.getISO8601DateFormat(null));
+        map.put("remindDate", new Date());
+
+        map.put("START_GATEWAY", Reminder.Day30.gatewayValue() );
+        ProcessInstance instance=starProcess(bizKey, map, Reminder.Day30.name() );
         Assert.assertNotNull(instance);
         //
-        log.info("has cancel task={}", hasTask(bizKey, "cancelReminder"));
+        log.info("has cancel task={}", hasTask(bizKey, Reminder.Day30.taskDefKey()) );
         List<Job> timerList=activitiRule.getManagementService()
                 .createJobQuery()
                 .processInstanceId(instance.getProcessInstanceId())
@@ -86,9 +103,9 @@ public class ReminderTest {
                 .processInstanceBusinessKey(bizKey).singleResult();
         Assert.assertNull(instance);
         //
-        printHistoricReminder(bizKey);
+        printHistoricReminder(bizKey, Reminder.Day30);
 
-        printHistoricTaskInstance(bizKey);
+        printHistoricTaskInstance(bizKey, Reminder.Day30);
     }
 
     HistoricProcessInstance getHistoriceProcessInstanceByBizKeyAndInstanceName(String bizKey, String name) {
@@ -99,29 +116,29 @@ public class ReminderTest {
                 .singleResult();
     }
 
-    void printHistoricReminder(String bizKey) {
+    void printHistoricReminder(String bizKey, Reminder reminder) {
         HistoricProcessInstance pi=
-                getHistoriceProcessInstanceByBizKeyAndInstanceName(bizKey, "d90reminder");
+                getHistoriceProcessInstanceByBizKeyAndInstanceName(bizKey, reminder.name());
 
 
-        HistoricActivityInstance reminder=
+        HistoricActivityInstance hai=
                 activitiRule.getHistoryService()
                         .createHistoricActivityInstanceQuery()
                         .processInstanceId(pi.getId())
-                        .activityId("reminderTask")
+                        .activityId( reminder.activityId() )
                         .singleResult();
         log.info("endTime={},activityId={},activityName={},activityType={}, duration={}",
-                reminder.getEndTime(),
-                reminder.getActivityId(),
-                reminder.getActivityName(),
-                reminder.getActivityType(),
-                reminder.getDurationInMillis());
+                hai.getEndTime(),
+                hai.getActivityId(),
+                hai.getActivityName(),
+                hai.getActivityType(),
+                hai.getDurationInMillis());
         //
         HistoricActivityInstance catchError=
                 activitiRule.getHistoryService()
                         .createHistoricActivityInstanceQuery()
                         .processInstanceId(pi.getId())
-                        .activityId("catchError")
+                        .activityId( reminder.catchErrorId() )
                         .singleResult();
         log.info("endTime={},activityId={},activityName={},activityType={}, duration={}",
                 catchError.getEndTime(),
@@ -138,9 +155,9 @@ public class ReminderTest {
                 .singleResult() != null;
     }
 
-    void printHistoricTaskInstance(String bizKey) {
+    void printHistoricTaskInstance(String bizKey, Reminder reminder) {
         HistoricProcessInstance pi=
-                getHistoriceProcessInstanceByBizKeyAndInstanceName(bizKey,"d90reminder");
+                getHistoriceProcessInstanceByBizKeyAndInstanceName(bizKey,reminder.name());
 
         List<HistoricTaskInstance>hsList=activitiRule.getHistoryService()
                 .createHistoricTaskInstanceQuery()
