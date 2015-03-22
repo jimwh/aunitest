@@ -137,7 +137,7 @@ public class LabUnitTest {
                 .list();
         log.info("open activity:");
         for (Execution exe: executionList) {
-            log.info("activityId={}", exe.getActivityId() );
+            log.info("serviceTaskId={}", exe.getActivityId() );
         }
     }
 

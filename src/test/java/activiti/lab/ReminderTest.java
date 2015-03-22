@@ -33,7 +33,7 @@ public class ReminderTest {
         log.info("codeName={}", Reminder.Day30.getText());
         log.info("name={}", Reminder.Day30.name());
         log.info("taskDefKey={}", Reminder.Day30.taskDefKey());
-        log.info("activityId={}", Reminder.Day30.activityId());
+        log.info("serviceTaskId={}", Reminder.Day30.serviceTaskId());
         log.info("toString={}", Reminder.Day30.toString());
         Date date = new Date();
         log.info("date={}", date);
@@ -69,7 +69,7 @@ public class ReminderTest {
                         .desc()
                         .list();
         for(HistoricActivityInstance hai: inList) {
-            log.info("activityId={}", hai.getActivityId());
+            log.info("serviceTaskId={}", hai.getActivityId());
         }
     }
 
@@ -125,9 +125,9 @@ public class ReminderTest {
                 activitiRule.getHistoryService()
                         .createHistoricActivityInstanceQuery()
                         .processInstanceId(pi.getId())
-                        .activityId( reminder.activityId() )
+                        .activityId( reminder.serviceTaskId() )
                         .singleResult();
-        log.info("endTime={},activityId={},activityName={},activityType={}, duration={}",
+        log.info("endTime={},serviceTaskId={},activityName={},activityType={}, duration={}",
                 hai.getEndTime(),
                 hai.getActivityId(),
                 hai.getActivityName(),
@@ -140,7 +140,7 @@ public class ReminderTest {
                         .processInstanceId(pi.getId())
                         .activityId( reminder.catchErrorId() )
                         .singleResult();
-        log.info("endTime={},activityId={},activityName={},activityType={}, duration={}",
+        log.info("endTime={},serviceTaskId={},activityName={},activityType={}, duration={}",
                 catchError.getEndTime(),
                 catchError.getActivityId(),
                 catchError.getActivityName(),

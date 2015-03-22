@@ -13,7 +13,6 @@ public class LabListener implements TaskListener, ExecutionListener {
 
     private static final Logger log = LoggerFactory.getLogger(LabListener.class);
 
-
     // task listener
     @Override
     public void notify(DelegateTask delegateTask) {
@@ -77,13 +76,19 @@ public class LabListener implements TaskListener, ExecutionListener {
     @Autowired
     BookFlight book;
 
-    public void expirationReminder(DelegateExecution delegateExecution) throws Exception {
+    public void expirationReminder(DelegateExecution execution) throws Exception {
+        if (Reminder.Day30.isServiceTaskId(execution.getCurrentActivityId())) {
+            reminder30(execution);
+        }
+    }
+
+    private void reminder30(DelegateExecution execution) throws Exception {
         int retries = 0;
         while (true) {
             try {
                 log.info("bizKey={}, currentActivityId={}",
-                        delegateExecution.getProcessBusinessKey(),
-                        delegateExecution.getCurrentActivityId()
+                        execution.getProcessBusinessKey(),
+                        execution.getCurrentActivityId()
                 );
                 book.bookFlight("foome");
                 log.info("booked ...");
@@ -101,5 +106,4 @@ public class LabListener implements TaskListener, ExecutionListener {
             }
         }
     }
-
 }
