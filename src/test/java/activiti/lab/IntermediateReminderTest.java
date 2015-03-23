@@ -47,25 +47,19 @@ public class IntermediateReminderTest {
     public void normal() {
         String bizKey = "my-bizKey";
         Map<String, Object>map=new HashMap<String, Object>();
-        //map.put("remindDate", Reminder.Day30.getISO8601DateFormat(dateTime.minusDays(3).toDate()));
-        //map.put("remindDate", Reminder.Day30.getISO8601DateFormat(dateTime.plusDays(1).toDate()));
-        //map.put("remindDate", Reminder.Day30.getISO8601DateFormat(null));
         map.put("remindDate", new Date());
 
         map.put("START_GATEWAY", Reminder.Day30.gatewayValue() );
         ProcessInstance instance=starProcess(bizKey, map, Reminder.Day30.name() );
         Assert.assertNotNull(instance);
         //
-        log.info("has cancel task={}", hasTask(bizKey, Reminder.Day30.taskDefKey()) );
+        Assert.assertTrue(hasTask(bizKey, Reminder.Day30.taskDefKey()));
+
         List<Job> timerList=activitiRule.getManagementService()
                 .createJobQuery()
                 .processInstanceId(instance.getProcessInstanceId())
                 .list();
         Assert.assertNotNull(timerList);
-
-        try {
-            Thread.sleep(30000);
-        }catch (InterruptedException e){}
 
         instance = activitiRule.getRuntimeService().createProcessInstanceQuery()
                 .processInstanceBusinessKey(bizKey).singleResult();
@@ -75,7 +69,7 @@ public class IntermediateReminderTest {
         printHistoricTaskInstance(bizKey, Reminder.Day30);
     }
 
-    HistoricProcessInstance getHistoriceProcessInstanceByBizKeyAndInstanceName(String bizKey, String name) {
+    HistoricProcessInstance getHistoricProcessInstanceByBizKeyAndInstanceName(String bizKey, String name) {
         return activitiRule.getHistoryService()
                 .createHistoricProcessInstanceQuery()
                 .processInstanceBusinessKey(bizKey)
@@ -85,8 +79,7 @@ public class IntermediateReminderTest {
 
     void printHistoricReminder(String bizKey, Reminder reminder) {
         HistoricProcessInstance pi=
-                getHistoriceProcessInstanceByBizKeyAndInstanceName(bizKey, reminder.name());
-
+                getHistoricProcessInstanceByBizKeyAndInstanceName(bizKey, reminder.name());
 
         HistoricActivityInstance hai=
                 activitiRule.getHistoryService()
@@ -128,7 +121,7 @@ public class IntermediateReminderTest {
 
     void printHistoricTaskInstance(String bizKey, Reminder reminder) {
         HistoricProcessInstance pi=
-                getHistoriceProcessInstanceByBizKeyAndInstanceName(bizKey,reminder.name());
+                getHistoricProcessInstanceByBizKeyAndInstanceName(bizKey, reminder.name());
 
         List<HistoricTaskInstance>hsList=activitiRule.getHistoryService()
                 .createHistoricTaskInstanceQuery()
@@ -181,9 +174,6 @@ public class IntermediateReminderTest {
 
         printHistoricReminder(bizKey, Reminder.Day30);
         printHistoricTaskInstance(bizKey, Reminder.Day30);
-
-
-
     }
 
 
