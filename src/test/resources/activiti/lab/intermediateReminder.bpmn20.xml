@@ -7,6 +7,8 @@
         expressionLanguage="http://www.w3.org/1999/XPath"
         targetNamespace="activiti-report">
 
+    <error id="reminderError" errorCode="BusinessExceptionOccurred"/>
+
     <process id="intermediateReminder" name="Reminder">
 
         <startEvent id="theStart" name="Start"/>
@@ -120,17 +122,17 @@
 
 
         <boundaryEvent id="catchError90" attachedToRef="D90T">
-            <errorEventDefinition errorRef="BusinessExceptionOccurred"/>
+            <errorEventDefinition errorRef="reminderError"/>
         </boundaryEvent>
         <sequenceFlow sourceRef="catchError90" targetRef="theEnd"/>
 
         <boundaryEvent id="catchError60" attachedToRef="D60T">
-            <errorEventDefinition errorRef="BusinessExceptionOccurred"/>
+            <errorEventDefinition errorRef="reminderError"/>
         </boundaryEvent>
         <sequenceFlow sourceRef="catchError60" targetRef="theEnd"/>
 
         <boundaryEvent id="catchError30" attachedToRef="D30T">
-            <errorEventDefinition errorRef="BusinessExceptionOccurred"/>
+            <errorEventDefinition errorRef="reminderError"/>
         </boundaryEvent>
         <sequenceFlow sourceRef="catchError30" targetRef="theEnd"/>
 
