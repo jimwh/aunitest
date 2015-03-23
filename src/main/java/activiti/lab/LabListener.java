@@ -95,7 +95,7 @@ public class LabListener implements TaskListener, ExecutionListener {
                 return;
             } catch (Exception e) {
                 if (retries == 3) {
-                    throw new BpmnError("BusinessExceptionOccurred");
+                    throw new BpmnError("ReminderException");
                 }
                 retries += 1;
             }

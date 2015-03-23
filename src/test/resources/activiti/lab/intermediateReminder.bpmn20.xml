@@ -7,7 +7,7 @@
         expressionLanguage="http://www.w3.org/1999/XPath"
         targetNamespace="activiti-report">
 
-    <error id="reminderError" errorCode="BusinessExceptionOccurred"/>
+    <error id="reminderError" errorCode="ReminderException"/>
 
     <process id="intermediateReminder" name="Reminder">
 
@@ -92,7 +92,7 @@
             <intermediateCatchEvent id="timer30">
                 <timerEventDefinition>
                     <timeDate>${remindDate}</timeDate>
-                    </timerEventDefinition>
+                </timerEventDefinition>
             </intermediateCatchEvent>
 
             <serviceTask id="reminder30" name="30 Day Reminder"
