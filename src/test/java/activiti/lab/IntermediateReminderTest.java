@@ -37,13 +37,21 @@ public class IntermediateReminderTest {
         log.info("taskDefKey={}", Reminder.Day30.taskDefKey());
         log.info("serviceTaskId={}", Reminder.Day30.serviceTaskId());
         log.info("toString={}", Reminder.Day30.toString());
-        Date date = new Date();
-        log.info("date={}", date);
-        log.info("ISO8601DateFormat={}", Reminder.Day30.getISO8601DateFormat(date));
+
+        DateTime today = getDateTime(new Date());
+        DateTime endDateTime = today.plusDays(31);
+
+        log.info("needToRemind={}", Reminder.Day30.needToRemind(endDateTime.toDate()));
+
+        Date remindDate=Reminder.Day30.getRemindDate(endDateTime.toDate());
+
+        log.info("ISO8601DateFormat={}", Reminder.Day30.getISO8601DateFormat(remindDate) );
         //normal();
         userCancel();
     }
-
+    DateTime getDateTime(Date date) {
+        return new DateTime(date);
+    }
     public void normal() {
         String bizKey = "my-bizKey";
         Map<String, Object>map=new HashMap<String, Object>();

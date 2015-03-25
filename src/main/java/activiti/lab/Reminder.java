@@ -31,6 +31,14 @@ public enum Reminder {
         public String catchErrorId() {
             return "catchError90";
         }
+
+        public boolean needToRemind(Date date) {
+            return testDate(date, 90);
+        }
+
+        public Date getRemindDate(Date date) {
+            return remindDate(date, 90);
+        }
     },
 
     Day60("60 Day Reminder") {
@@ -57,6 +65,15 @@ public enum Reminder {
         public boolean isServiceTaskId(String id) {
             return serviceTaskId().equals(id);
         }
+
+        public boolean needToRemind(Date date) {
+            return testDate(date, 60);
+        }
+
+        public Date getRemindDate(Date date) {
+            return remindDate(date, 60);
+        }
+
     },
 
     Day30("30 Day Reminder") {
@@ -84,7 +101,26 @@ public enum Reminder {
             return "catchError30";
         }
 
+        public boolean needToRemind(Date date) {
+            return testDate(date, 30);
+        }
+
+        public Date getRemindDate(Date date) {
+            return remindDate(date, 30);
+        }
     };
+
+    static boolean testDate(Date date, int days) {
+        if( date == null ) return false;
+        DateTime dateTime=new DateTime(date);
+        return dateTime.minusDays(days).isAfterNow();
+    }
+
+    static Date remindDate(Date date, int days) {
+        if( date == null ) return null;
+        DateTime dateTime=new DateTime(date);
+        return dateTime.minusDays(days).toDate();
+    }
 
     private String text;
 
@@ -107,6 +143,10 @@ public enum Reminder {
     public abstract int gatewayValue();
 
     public abstract String catchErrorId();
+
+    public abstract boolean needToRemind(Date date);
+
+    public abstract Date getRemindDate(Date date);
 
     public String getISO8601DateFormat(Date date) {
         Assert.notNull(date);
