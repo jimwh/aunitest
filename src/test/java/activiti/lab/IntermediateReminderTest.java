@@ -4,6 +4,7 @@ import org.activiti.engine.RuntimeService;
 import org.activiti.engine.history.HistoricActivityInstance;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
+import org.activiti.engine.runtime.Execution;
 import org.activiti.engine.runtime.Job;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
@@ -20,6 +21,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static junit.framework.TestCase.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 public class IntermediateReminderTest {
 
@@ -71,7 +75,7 @@ public class IntermediateReminderTest {
 
         instance = activitiRule.getRuntimeService().createProcessInstanceQuery()
                 .processInstanceBusinessKey(bizKey).singleResult();
-        Assert.assertNull(instance);
+        assertNull(instance);
         //
         printHistoricReminder(bizKey, Reminder.Day30);
         printHistoricTaskInstance(bizKey, Reminder.Day30);
@@ -147,11 +151,12 @@ public class IntermediateReminderTest {
 
 
     public void userCancel() {
+        RuntimeService runtimeService=activitiRule.getRuntimeService();
         String bizKey = "my-bizKey";
         Map<String, Object>map=new HashMap<String, Object>();
         map.put("START_GATEWAY", Reminder.Day30.gatewayValue() );
         DateTime dateTime=new DateTime();
-        map.put("remindDate", Reminder.Day30.getISO8601DateFormat( dateTime.plusDays(1).toDate()) );
+        map.put("remindDate", Reminder.Day30.getISO8601DateFormat(dateTime.plusDays(1).toDate()) );
         ProcessInstance instance=starProcess(bizKey, map, Reminder.Day30.name());
         Assert.assertNotNull(instance);
         //
@@ -166,7 +171,19 @@ public class IntermediateReminderTest {
         //
         instance = activitiRule.getRuntimeService().createProcessInstanceQuery()
                 .processInstanceBusinessKey(bizKey).singleResult();
-        Assert.assertNull(instance);
+        Assert.assertNotNull(instance);
+        //
+
+        Execution execution = runtimeService.createExecutionQuery()
+                .processInstanceId(instance.getId())
+                .activityId("waitState")
+                .singleResult();
+        assertNotNull(execution);
+        runtimeService.signal(execution.getId());
+        //
+        instance = activitiRule.getRuntimeService().createProcessInstanceQuery()
+                .processInstanceBusinessKey(bizKey).singleResult();
+        assertNull(instance);
         //
 
         List<HistoricActivityInstance>inList=

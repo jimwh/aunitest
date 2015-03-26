@@ -153,7 +153,12 @@
 
         <sequenceFlow sourceRef="D90T" targetRef="theEnd"/>
         <sequenceFlow sourceRef="D60T" targetRef="theEnd"/>
+        <!--
         <sequenceFlow sourceRef="D30T" targetRef="theEnd"/>
+        -->
+        <sequenceFlow sourceRef="D30T" targetRef="waitState"/>
+        <receiveTask id="waitState" name="wait" />
+        <sequenceFlow sourceRef="waitState" targetRef="theEnd"/>
 
         <endEvent id="theEnd"/>
 
