@@ -160,6 +160,12 @@ public class IntermediateReminderTest {
         ProcessInstance instance=starProcess(bizKey, map, Reminder.Day30.name());
         Assert.assertNotNull(instance);
         //
+        Execution execution = runtimeService.createExecutionQuery()
+                .processInstanceId(instance.getId())
+                .activityId("waitState")
+                .singleResult();
+        assertNull(execution);
+
         Task userTask=activitiRule.getTaskService()
                 .createTaskQuery()
                 .taskDefinitionKey(Reminder.Day30.taskDefKey())
@@ -174,7 +180,7 @@ public class IntermediateReminderTest {
         Assert.assertNotNull(instance);
         //
 
-        Execution execution = runtimeService.createExecutionQuery()
+        execution = runtimeService.createExecutionQuery()
                 .processInstanceId(instance.getId())
                 .activityId("waitState")
                 .singleResult();
