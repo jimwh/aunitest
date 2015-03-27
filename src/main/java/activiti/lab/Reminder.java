@@ -33,7 +33,7 @@ public enum Reminder {
         }
 
         public boolean needToRemind(Date date) {
-            return testDate(date, 90);
+            return isAfterNow(date, 90);
         }
 
         public Date getRemindDate(Date date) {
@@ -67,7 +67,7 @@ public enum Reminder {
         }
 
         public boolean needToRemind(Date date) {
-            return testDate(date, 60);
+            return isAfterNow(date, 60);
         }
 
         public Date getRemindDate(Date date) {
@@ -102,7 +102,7 @@ public enum Reminder {
         }
 
         public boolean needToRemind(Date date) {
-            return testDate(date, 30);
+            return isAfterNow(date, 30);
         }
 
         public Date getRemindDate(Date date) {
@@ -110,13 +110,13 @@ public enum Reminder {
         }
     };
 
-    static boolean testDate(Date date, int days) {
+    private static boolean isAfterNow(Date date, int days) {
         if( date == null ) return false;
         DateTime dateTime=new DateTime(date);
         return dateTime.minusDays(days).isAfterNow();
     }
 
-    static Date remindDate(Date date, int days) {
+    private static Date remindDate(Date date, int days) {
         if( date == null ) return null;
         DateTime dateTime=new DateTime(date);
         return dateTime.minusDays(days).toDate();
@@ -124,7 +124,7 @@ public enum Reminder {
 
     private String text;
 
-    private Reminder(String text) {
+    Reminder(String text) {
         this.text = text;
     }
 

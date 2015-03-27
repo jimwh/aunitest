@@ -36,6 +36,7 @@ public class IntermediateReminderTest {
     @Test
     @Deployment(resources = {"activiti/lab/intermediateReminder.bpmn20.xml"})
     public void test() {
+
         log.info("codeName={}", Reminder.Day30.getText());
         log.info("name={}", Reminder.Day30.name());
         log.info("taskDefKey={}", Reminder.Day30.taskDefKey());
