@@ -80,9 +80,13 @@ public class IntermediateReminderTest {
                 .processInstanceId(instance.getProcessInstanceId())
                 .list();
         Assert.assertNotNull(timerList);
-        log.info("due date: {}", timerList.get(0).getDuedate());
-        //managementService.executeJob(timerList.get(0).getId());
+        Job job=timerList.get(0);
+        log.info("due date: {}", job.getDuedate());
+        // managementService.executeJob(timerList.get(0).getId());
         // have to give some time for unit testing
+
+        testRemindDateAndJobDueDate(bizKey, Reminder.Day30.name());
+
         try {
             Thread.sleep(10000);
         }catch (InterruptedException e){}
@@ -231,5 +235,31 @@ public class IntermediateReminderTest {
         ProcessInstance instance = runtimeService.startProcessInstanceByKey(ProcessDefKey, bizKey, map);
         runtimeService.setProcessInstanceName(instance.getProcessInstanceId(), instanceName);
         return instance;
+    }
+
+    void testRemindDateAndJobDueDate(String bizKey, String instanceName) {
+
+        ProcessInstance instance=activitiRule.getRuntimeService().createProcessInstanceQuery()
+                .processInstanceBusinessKey(bizKey)
+                .processInstanceName(instanceName)
+                .includeProcessVariables()
+                .singleResult();
+        if (instance==null) return;
+        Map<String,Object>map=instance.getProcessVariables();
+        if( map.get("remindDate")==null ) return;
+
+        ManagementService managementService=activitiRule.getManagementService();
+        List<Job> timerList=managementService
+                .createJobQuery()
+                .processInstanceId(instance.getProcessInstanceId())
+                .list();
+        if(timerList.isEmpty()) return;
+        Job job=timerList.get(0);
+        Date dueDate = job.getDuedate();
+
+        if( dueDate.equals( map.get("remindDate") )) {
+            log.info("found ...............................");
+        }
+
     }
 }
