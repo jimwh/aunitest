@@ -1,5 +1,6 @@
 package activiti.lab;
 
+import org.activiti.engine.ManagementService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.history.HistoricActivityInstance;
 import org.activiti.engine.history.HistoricProcessInstance;
@@ -22,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
 import static org.junit.Assert.assertNull;
 
@@ -36,44 +38,54 @@ public class IntermediateReminderTest {
     @Test
     @Deployment(resources = {"activiti/lab/intermediateReminder.bpmn20.xml"})
     public void test() {
-
+/*
         log.info("codeName={}", Reminder.Day30.getText());
         log.info("name={}", Reminder.Day30.name());
         log.info("taskDefKey={}", Reminder.Day30.taskDefKey());
         log.info("serviceTaskId={}", Reminder.Day30.serviceTaskId());
         log.info("toString={}", Reminder.Day30.toString());
 
-        DateTime today = getDateTime(new Date());
-        DateTime endDateTime = today.plusDays(31);
+        DateTime todayDateTime = DateTime.now();
+        DateTime endDateTime = todayDateTime.plusDays(31);
+        Date today=todayDateTime.toDate();
+        Date endDate=endDateTime.toDate();
 
-        log.info("needToRemind={}", Reminder.Day30.needToRemind(endDateTime.toDate()));
-
-        Date remindDate=Reminder.Day30.getRemindDate(endDateTime.toDate());
-
-        log.info("ISO8601DateFormat={}", Reminder.Day30.getISO8601DateFormat(remindDate) );
-        //normal();
-        userCancel();
+        assertEquals(true, Reminder.Day30.needToRemind(endDate));
+        assertEquals(false, Reminder.Day30.needToRemind(today));
+        assertNotNull(Reminder.Day30.getRemindDate(endDate));
+        log.info("ISO8601DateFormat={}", Reminder.Day30.getISO8601DateFormat(
+                Reminder.Day30.getRemindDate(new Date())));
+*/
+        normal();
+        //userCancel();
     }
-    DateTime getDateTime(Date date) {
-        return new DateTime(date);
-    }
+
     public void normal() {
         String bizKey = "my-bizKey";
         Map<String, Object>map=new HashMap<String, Object>();
-        map.put("remindDate", new Date());
+        DateTime d=DateTime.now();
 
+        map.put("remindDate", d.minusDays(1).toDate());
+        //map.put("remindDate", DateTime.now().toDate() );
         map.put("START_GATEWAY", Reminder.Day30.gatewayValue() );
         ProcessInstance instance=starProcess(bizKey, map, Reminder.Day30.name() );
         Assert.assertNotNull(instance);
         //
         Assert.assertTrue(hasTask(bizKey, Reminder.Day30.taskDefKey()));
 
-        List<Job> timerList=activitiRule.getManagementService()
+        //
+        ManagementService managementService=activitiRule.getManagementService();
+        List<Job> timerList=managementService
                 .createJobQuery()
                 .processInstanceId(instance.getProcessInstanceId())
                 .list();
         Assert.assertNotNull(timerList);
-
+        log.info("due date: {}", timerList.get(0).getDuedate());
+        //managementService.executeJob(timerList.get(0).getId());
+        // have to give some time for unit testing
+        try {
+            Thread.sleep(10000);
+        }catch (InterruptedException e){}
         instance = activitiRule.getRuntimeService().createProcessInstanceQuery()
                 .processInstanceBusinessKey(bizKey).singleResult();
         assertNull(instance);
@@ -161,11 +173,14 @@ public class IntermediateReminderTest {
         ProcessInstance instance=starProcess(bizKey, map, Reminder.Day30.name());
         Assert.assertNotNull(instance);
         //
+
+        /* for receive task
         Execution execution = runtimeService.createExecutionQuery()
                 .processInstanceId(instance.getId())
                 .activityId("waitState")
                 .singleResult();
         assertNull(execution);
+        */
 
         Task userTask=activitiRule.getTaskService()
                 .createTaskQuery()
@@ -176,10 +191,11 @@ public class IntermediateReminderTest {
         Assert.assertNotNull(userTask);
         activitiRule.getTaskService().complete(userTask.getId());
         //
+        /*
         instance = activitiRule.getRuntimeService().createProcessInstanceQuery()
                 .processInstanceBusinessKey(bizKey).singleResult();
         Assert.assertNotNull(instance);
-        //
+
 
         execution = runtimeService.createExecutionQuery()
                 .processInstanceId(instance.getId())
@@ -187,6 +203,7 @@ public class IntermediateReminderTest {
                 .singleResult();
         assertNotNull(execution);
         runtimeService.signal(execution.getId());
+        */
         //
         instance = activitiRule.getRuntimeService().createProcessInstanceQuery()
                 .processInstanceBusinessKey(bizKey).singleResult();

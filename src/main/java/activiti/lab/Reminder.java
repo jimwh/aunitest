@@ -33,11 +33,11 @@ public enum Reminder {
         }
 
         public boolean needToRemind(Date date) {
-            return isAfterNow(date, 90);
+            return isAfterNow(date, this.gatewayValue());
         }
 
         public Date getRemindDate(Date date) {
-            return remindDate(date, 90);
+            return remindDate(date, this.gatewayValue());
         }
     },
 
@@ -67,11 +67,11 @@ public enum Reminder {
         }
 
         public boolean needToRemind(Date date) {
-            return isAfterNow(date, 60);
+            return isAfterNow(date, this.gatewayValue());
         }
 
         public Date getRemindDate(Date date) {
-            return remindDate(date, 60);
+            return remindDate(date, this.gatewayValue());
         }
 
     },
@@ -102,11 +102,11 @@ public enum Reminder {
         }
 
         public boolean needToRemind(Date date) {
-            return isAfterNow(date, 30);
+            return isAfterNow(date, this.gatewayValue());
         }
 
         public Date getRemindDate(Date date) {
-            return remindDate(date, 30);
+            return remindDate(date, this.gatewayValue());
         }
     };
 

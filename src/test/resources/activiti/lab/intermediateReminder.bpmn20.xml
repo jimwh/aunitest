@@ -5,7 +5,7 @@
         xmlns:activiti="http://activiti.org/bpmn"
         typeLanguage="http://www.w3.org/2001/XMLSchema"
         expressionLanguage="http://www.w3.org/1999/XPath"
-        targetNamespace="activiti-report">
+        targetNamespace="expiration-reminder">
 
     <error id="reminderError" errorCode="ReminderException"/>
 
@@ -16,7 +16,7 @@
         <!-- 90 day reminder -->
         <transaction id="D90T">
 
-            <userTask id="cancelReminder90" name="Cancel 90 Day Reminder"/>
+            <userTask id="cancelReminder90" name="Cancel 90-Day Reminder"/>
 
             <intermediateCatchEvent id="timer90">
                 <timerEventDefinition>
@@ -24,7 +24,7 @@
                 </timerEventDefinition>
             </intermediateCatchEvent>
 
-            <serviceTask id="reminder90" name="90 Day Reminder"
+            <serviceTask id="reminder90" name="90-Day Reminder"
                          activiti:expression="#{labListener.expirationReminder(execution)}"/>
 
             <startEvent id="start90"/>
@@ -60,7 +60,7 @@
                 </timerEventDefinition>
             </intermediateCatchEvent>
 
-            <serviceTask id="reminder60" name="60 Day Reminder"
+            <serviceTask id="reminder60" name="60-Day Reminder"
                          activiti:expression="#{labListener.expirationReminder(execution)}"/>
 
             <startEvent id="start60"/>
@@ -87,7 +87,7 @@
 
         <transaction id="D30T">
 
-            <userTask id="cancelReminder30" name="Cancel 30 Day Reminder"/>
+            <userTask id="cancelReminder30" name="Cancel 30-Day Reminder"/>
 
             <intermediateCatchEvent id="timer30">
                 <timerEventDefinition>
@@ -95,8 +95,8 @@
                 </timerEventDefinition>
             </intermediateCatchEvent>
 
-            <serviceTask id="reminder30" name="30 Day Reminder"
-                         activiti:expression="#{labListener.expirationReminder(execution)}"/>
+            <serviceTask id="reminder30" name="30-Day Reminder"
+                activiti:expression="#{labListener.expirationReminder(execution)}"/>
 
             <startEvent id="start30"/>
             <parallelGateway id="fork30"/>
@@ -153,13 +153,13 @@
 
         <sequenceFlow sourceRef="D90T" targetRef="theEnd"/>
         <sequenceFlow sourceRef="D60T" targetRef="theEnd"/>
-        <!--
         <sequenceFlow sourceRef="D30T" targetRef="theEnd"/>
-        -->
+
+        <!--
         <sequenceFlow sourceRef="D30T" targetRef="waitState"/>
         <receiveTask id="waitState" name="wait" />
         <sequenceFlow sourceRef="waitState" targetRef="theEnd"/>
-
+        -->
         <endEvent id="theEnd"/>
 
     </process>

@@ -86,7 +86,8 @@ public class LabListener implements TaskListener, ExecutionListener {
         int retries = 0;
         while (true) {
             try {
-                log.info("bizKey={}, currentActivityId={}",
+                log.info("retries={}, bizKey={}, currentActivityId={}",
+                        retries,
                         execution.getProcessBusinessKey(),
                         execution.getCurrentActivityId()
                 );
