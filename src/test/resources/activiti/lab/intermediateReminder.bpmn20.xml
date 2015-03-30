@@ -121,17 +121,17 @@
         </boundaryEvent>
 
 
-        <boundaryEvent id="catchError90" attachedToRef="D90T">
+        <boundaryEvent id="catchError90" attachedToRef="D90T" name="Catch Error 90-Day Reminder Error">
             <errorEventDefinition errorRef="reminderError"/>
         </boundaryEvent>
         <sequenceFlow sourceRef="catchError90" targetRef="theEnd"/>
 
-        <boundaryEvent id="catchError60" attachedToRef="D60T">
+        <boundaryEvent id="catchError60" attachedToRef="D60T" name="Catch Error 60-Day Reminder Error">
             <errorEventDefinition errorRef="reminderError"/>
         </boundaryEvent>
         <sequenceFlow sourceRef="catchError60" targetRef="theEnd"/>
 
-        <boundaryEvent id="catchError30" attachedToRef="D30T">
+        <boundaryEvent id="catchError30" attachedToRef="D30T" name="Catch Error 30-Day Reminder Error">
             <errorEventDefinition errorRef="reminderError"/>
         </boundaryEvent>
         <sequenceFlow sourceRef="catchError30" targetRef="theEnd"/>
