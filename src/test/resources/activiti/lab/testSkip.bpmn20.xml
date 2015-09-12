@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<definitions
+        xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:activiti="http://activiti.org/bpmn"
+        typeLanguage="http://www.w3.org/2001/XMLSchema"
+        expressionLanguage="http://www.w3.org/1999/XPath"
+        targetNamespace="expiration-reminder">
+
+    <error id="reminderError" errorCode="ReminderException"/>
+
+    <process id="testSkip" name="TestSkip">
+
+        <startEvent id="theStart"/>
+
+        <!--
+        <userTask id="myTask" name="MySkipTask"
+                  activiti:skipExpression="true">
+        <multiInstanceLoopCharacteristics>
+            <loopCardinality>3</loopCardinality>
+        </multiInstanceLoopCharacteristics>
+        </userTask>
+        -->
+
+        <userTask id="myTask" activiti:skipExpression="${execution.getVariable('skip')}"/>
+
+        <sequenceFlow sourceRef="theStart" targetRef="myTask"/>
+        <sequenceFlow sourceRef="myTask" targetRef="theEnd"/>
+        <endEvent id="theEnd"/>
+
+    </process>
+
+</definitions>
